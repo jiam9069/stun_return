@@ -1,6 +1,6 @@
 # 【Lucky STUN 反向回源一键脚本】
 
-- 一个基于 STUN 协议的双向流量回源工具，支持 CentOS、Debian、Ubuntu 和 Alpine 系统。
+- 一个基于 STUN 协议的双向流量回源工具，支持 CentOS、Debian、Ubuntu、 Alpine 和 OpenWRT 系统。
 
 * * *
 
@@ -17,7 +17,7 @@
 * * *
 ## 1. 教程
 - 博客教程: https://www.fscarmen.com/2025/01/gost-stun.html
-- 视频教程: 
+- 视频教程: https://youtu.be/nqxA7kFVJi0
 
 ## 2. 特点
 - 双栈支持：同时支持 IPv4 和 IPv6 回源，可以根据需要选择使用单栈或双栈模式。
@@ -29,7 +29,7 @@
 ## 3. 支持的操作系统和架构
    | | 系统 | 架构 |
    | -- | -- | -- |
-   | 服务端 | CentOS, Debian, Ubuntu | amd64 (x86_64), arm64 |
+   | 服务端 | CentOS, Debian, Ubuntu, OpenWRT | amd64 (x86_64), arm64 |
    | 客户端 | CentOS, Debian, Ubuntu, Alpine | amd64 (x86_64), arm64 |
 
 ## 4. 安装方法
