@@ -3,8 +3,8 @@
 # 当前脚本更新日期 （2025.01.21）
 
 # GitHub 代理地址
-GH_PROXY=''
-# GH_PROXY='https://ghfast.top/'
+# GH_PROXY=''
+GH_PROXY='https://ghfast.top/'
 
 # 工作和临时目录
 SERVER_WORK_DIR='/etc/stun_return_server'
@@ -18,7 +18,7 @@ trap "rm -rf ${TMP_DIR}; exit" INT
 description() {
   clear
   echo -e "\n项目说明: 通过 STUN 的全球 CDN 网络回源，网络实现高速、稳定的数据传输。"
-  echo -e "\n项目地址: https://github.com/fscarmen/stun_return\n"
+  echo -e "\n项目地址: https://github.com/jiam9069/stun_return\n"
 }
 
 # 检查操作系统类型
@@ -260,9 +260,9 @@ get_config() {
 show_client_cmd() {
   get_config
   echo -e "\n客户端安装命令:\n"
-  [[ -n "$STUN_DOMAIN_V4" && -n "$STUN_DOMAIN_V6" ]] && echo -e "IPv4 + IPv6: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -c -w $WS_PATH -4 $STUN_DOMAIN_V4 -r <映射服务端使用的 IPv4 SOCKS5 端口> -6 $STUN_DOMAIN_V6 -e <映射服务端使用的 IPv6 SOCKS5 端口>\n"
-  [ -n "$STUN_DOMAIN_V4" ] && echo -e "IPv4: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -c -w $WS_PATH -4 $STUN_DOMAIN_V4 -r <映射服务端使用的 IPv4 SOCKS5 端口>\n"
-  [ -n "$STUN_DOMAIN_V6" ] && echo -e "IPv6: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -c -w $WS_PATH -6 $STUN_DOMAIN_V6 -e <映射服务端使用的 IPv6 SOCKS5 端口>\n"
+  [[ -n "$STUN_DOMAIN_V4" && -n "$STUN_DOMAIN_V6" ]] && echo -e "IPv4 + IPv6: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -c -w $WS_PATH -4 $STUN_DOMAIN_V4 -r <映射服务端使用的 IPv4 SOCKS5 端口> -6 $STUN_DOMAIN_V6 -e <映射服务端使用的 IPv6 SOCKS5 端口>\n"
+  [ -n "$STUN_DOMAIN_V4" ] && echo -e "IPv4: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -c -w $WS_PATH -4 $STUN_DOMAIN_V4 -r <映射服务端使用的 IPv4 SOCKS5 端口>\n"
+  [ -n "$STUN_DOMAIN_V6" ] && echo -e "IPv6: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -c -w $WS_PATH -6 $STUN_DOMAIN_V6 -e <映射服务端使用的 IPv6 SOCKS5 端口>\n"
 }
 
 # 客户端安装函数
@@ -742,7 +742,7 @@ check_arch
 while getopts ":uhscn4:6:p:w:r:e:" OPTNAME; do
   case "${OPTNAME,,}" in
     'h')
-      echo -e "\n用法: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) [选项]"
+      echo -e "\n用法: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) [选项]"
       echo -e "\n选项:"
       echo -e "  -h\t\t显示帮助信息"
       echo -e "  -u\t\t卸载 stun_return (服务端和客户端)"
@@ -756,9 +756,9 @@ while getopts ":uhscn4:6:p:w:r:e:" OPTNAME; do
       echo -e "  -n\t\t显示客户端安装命令 (服务端)"
       echo -e "  -c\t\t安装客户端"
       echo -e "\n示例:"
-      echo -e "  安装服务端: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -s -p 20000 -4 v4.stun.com -6 v6.stun.com -w 3b451552-e776-45c5-9b98-bde3ab99bf75"
-      echo -e "\n  安装客户端: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -c -4 v4.stun.com -r 30000 -6 v6.stun.com -e 30001 -w 3b451552-e776-45c5-9b98-bde3ab99bf75"
-      echo -e "\n  卸载 stun_return: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -u"
+      echo -e "  安装服务端: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -s -p 20000 -4 v4.stun.com -6 v6.stun.com -w 3b451552-e776-45c5-9b98-bde3ab99bf75"
+      echo -e "\n  安装客户端: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -c -4 v4.stun.com -r 30000 -6 v6.stun.com -e 30001 -w 3b451552-e776-45c5-9b98-bde3ab99bf75"
+      echo -e "\n  卸载 stun_return: bash <(wget --no-check-certificate -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -u"
       echo ""
       exit 0
       ;;
