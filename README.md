@@ -1,6 +1,7 @@
 # 【Lucky STUN 反向回源一键脚本】
 
 - 一个基于 STUN 协议的双向流量回源工具，支持 CentOS、Debian、Ubuntu、 Alpine 和 OpenWRT 系统。
+- 基于fscarmen大佬的代码做了调整，增加了ss协议，可选择socks或ss，并支持连接密码设置。
 
 * * *
 
@@ -39,13 +40,13 @@
 #### 4.1.1 交互式安装：
 
 ```bash
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh)
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh)
 ```
 
 #### 4.1.2 快捷参数安装：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) \
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) \
   -s \
   -p server-origin-port \
   -w your-ws-path \
@@ -58,13 +59,13 @@ bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stu
 #### 4.2.1 交互式安装：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh)
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh)
 ```
 
 #### 4.2.2 快捷参数安装：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) \
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) \
   -c \
   -w your-ws-path \
   -4 your-IPv4-domain.com \
@@ -76,7 +77,7 @@ bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stu
 ## 5. 卸载方法
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -u
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -u
 ```
 
 ## 6. 命令行参数
@@ -100,7 +101,7 @@ bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stu
 ### 7.1 服务端完整安装示例：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) \
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) \
   -s \
   -p 20000 \
   -w 3b451552-e776-45c5-9b98-bde3ab99bf75 \
@@ -111,7 +112,7 @@ bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stu
 ### 7.2 客户端完整安装示例：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) \
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) \
   -c \
   -w 3b451552-e776-45c5-9b98-bde3ab99bf75 \
   -4 v4.stun.com \
@@ -123,11 +124,11 @@ bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stu
 ### 7.3 查看客户端安装命令：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -n
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -n
 ```
 
 ### 7.4 卸载所有组件：
 
 ```
-bash <(wget -qO- https://raw.githubusercontent.com/fscarmen/stun_return/main/stun_return.sh) -u
+bash <(wget -qO- https://raw.githubusercontent.com/jiam9069/stun_return/main/stun_return.sh) -u
 ```
