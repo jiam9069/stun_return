@@ -3,7 +3,8 @@
 # 当前脚本更新日期 （2025.01.21）
 
 # GitHub 代理地址
-GH_PROXY='https://ghfast.top/'
+GH_PROXY=''
+# GH_PROXY='https://ghfast.top/'
 
 # 工作和临时目录
 SERVER_WORK_DIR='/etc/stun_return_server'
@@ -130,7 +131,7 @@ NAME="STUN-return"
 STUN_PORT=${STUN_PORT}
 WS_PATH=${WS_PATH}
 GOST_PROG="${SERVER_WORK_DIR}/gost"
-GOST_ARGS="-D -L relay+ws://:\${STUN_PORT}?path=/\${WS_PATH}&bind=true"
+GOST_ARGS="-D -L relay+wss://:\${STUN_PORT}?path=/\${WS_PATH}&cert=/root/cert.pem&key=/root/key.pem&bind=true"
 GOST_PID="/var/run/stun_gost.pid"
 
 start_progs() {
@@ -141,9 +142,9 @@ start_progs() {
 
 stop_progs() {
   echo "Stopping gost listener on port \${STUN_PORT}..."
-  {
+  [ -f "\$GOST_PID" ] && {
     kill \$(cat \$GOST_PID)
-    rm \$GOST_PID
+    rm -f \$GOST_PID
   }
 }
 
@@ -170,7 +171,7 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=${SERVER_WORK_DIR}/gost -D -L relay+ws://:${STUN_PORT}?path=/${WS_PATH}&bind=true
+ExecStart=${SERVER_WORK_DIR}/gost -D -L relay+wss://:${STUN_PORT}?path=/${WS_PATH}&cert=/root/cert.pem&key=/root/key.pem&bind=true
 
 [Install]
 WantedBy=multi-user.target
@@ -266,7 +267,40 @@ show_client_cmd() {
 
 # 客户端安装函数
 client_install() {
-  echo "$OS" | egrep -qiv "debian|centos|alpine" && echo "Error: 当前操作系统是: ${OS}，服务端只支持 CentOS, Debian, Ubuntu 和 Alpine。" && exit 1
+  echo "$OS" | egrep -qiv "debian|centos|alpine" && echo "Error: 当前操作系统是: ${OS}，客户端只支持 CentOS, Debian, Ubuntu 和 Alpine。" && exit 1
+
+  # 添加协议选择
+  echo ""
+  until [[ "$PROXY_TYPE" =~ ^[1-2]$ ]]; do
+    echo -e "请选择代理协议类型:\n1. Shadowsocks(aes-256-gcm)\n2. SOCKS5"
+    read -rp "请输入选择 [1-2]: " PROXY_TYPE
+    if ! [[ "$PROXY_TYPE" =~ ^[1-2]$ ]]; then
+      echo "Error: 请输入正确的数字(1-2)"
+    fi
+  done
+
+  # 根据选择提示输入不同信息
+  case "$PROXY_TYPE" in
+    1)
+      echo ""
+      [ -z "$SS_PASS_INPUT" ] && read -rp "请输入Shadowsocks密码: " SS_PASS_INPUT
+      SS_PASS=$(echo "$SS_PASS_INPUT" | sed 's/^[ ]*//; s/[ ]*$//')
+      [ -z "$SS_PASS" ] && echo "Error: 密码不能为空。" && exit 1
+      PROXY_CMD="ss://aes-256-gcm:${SS_PASS}"
+      ;;
+    2)
+      echo ""
+      [ -z "$SOCKS5_USER_INPUT" ] && read -rp "请输入SOCKS5代理用户名: " SOCKS5_USER_INPUT
+      SOCKS5_USER=$(echo "$SOCKS5_USER_INPUT" | sed 's/^[ ]*//; s/[ ]*$//')
+
+      echo ""
+      [ -z "$SOCKS5_PASS_INPUT" ] && read -rp "请输入SOCKS5代理密码: " SOCKS5_PASS_INPUT
+      SOCKS5_PASS=$(echo "$SOCKS5_PASS_INPUT" | sed 's/^[ ]*//; s/[ ]*$//')
+
+      [ -z "$SOCKS5_USER" ] || [ -z "$SOCKS5_PASS" ] && echo "Error: 用户名和密码不能为空。" && exit 1
+      PROXY_CMD="socks5://${SOCKS5_USER}:${SOCKS5_PASS}"
+      ;;
+  esac
 
   echo ""
   [[ -z "$STUN_DOMAIN_V4_INPUT" && "$IGNORE_STUN_DOMAIN_V4_INPUT" != 'ignore_stun_domain_v4_input' ]] && read -rp "请输入回源到服务端的 IPv4 域名，不使用请留空: " STUN_DOMAIN_V4_INPUT
@@ -302,10 +336,10 @@ client_install() {
   # 查找未被占用的端口
   local START_PORT=10000
   local END_PORT=65535
-  local SOCKS5_PORT
+  local PROXY_PORT
 
-  for ((SOCKS5_PORT = $START_PORT; SOCKS5_PORT <= $END_PORT; SOCKS5_PORT++)); do
-    ! $CMD -tuln | grep -q ":$SOCKS5_PORT" && break
+  for ((PROXY_PORT = $START_PORT; PROXY_PORT <= $END_PORT; PROXY_PORT++)); do
+    ! $CMD -tuln | grep -q ":$PROXY_PORT" && break
   done
 
   local GOST_API_URL="https://api.github.com/repos/go-gost/gost/releases/latest"
@@ -336,7 +370,7 @@ client_install() {
 name="stun_client"
 description="STUN Return Client Service"
 
-SOCKS5_PORT=${SOCKS5_PORT}
+PROXY_PORT=${PROXY_PORT}
 EOF
     [ -n "$STUN_DOMAIN_V4" ] && cat >>/etc/init.d/stun_client <<EOF
 REMOTE_PORT_V4=${REMOTE_PORT_V4}
@@ -352,21 +386,17 @@ WS_PATH=${WS_PATH}
 : \${cfgfile:=${CLIENT_WORK_DIR}}
 
 command="${CLIENT_WORK_DIR}/gost"
-command_args_local="-D -L socks5://[::1]:\${SOCKS5_PORT}"
+command_args_local="-D -L ${PROXY_CMD}@[::1]:\${PROXY_PORT}"
 EOF
     [ -n "$STUN_DOMAIN_V4" ] && cat >>/etc/init.d/stun_client <<EOF
-command_args_remote_v4="-D -L rtcp://:\${REMOTE_PORT_V4}/[::1]:\${SOCKS5_PORT} -F relay+ws://\${STUN_DOMAIN_V4}:80?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V4}"
+command_args_remote_v4="-D -L rtcp://:\${REMOTE_PORT_V4}/[::1]:\${PROXY_PORT} -F relay+wss://\${STUN_DOMAIN_V4}:443?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V4}"
 EOF
     [ -n "$STUN_DOMAIN_V6" ] && cat >>/etc/init.d/stun_client <<EOF
-command_args_remote_v6="-D -L rtcp://:\${REMOTE_PORT_V6}/[::1]:\${SOCKS5_PORT} -F relay+ws://\${STUN_DOMAIN_V6}:80?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V6}"
-EOF
-    [ -n "$STUN_DOMAIN_V4" ] && cat >>/etc/init.d/stun_client <<EOF
-pidfile_remote_v4="/var/run/stun-gost-remote-v4.pid"
-EOF
-    [ -n "$STUN_DOMAIN_V6" ] && cat >>/etc/init.d/stun_client <<EOF
-pidfile_remote_v6="/var/run/stun-gost-remote-v6.pid"
+command_args_remote_v6="-D -L rtcp://:\${REMOTE_PORT_V6}/[::1]:\${PROXY_PORT} -F relay+wss://\${STUN_DOMAIN_V6}:443?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V6}"
 EOF
     cat >>/etc/init.d/stun_client <<EOF
+pidfile_remote_v4="/var/run/stun-gost-remote-v4.pid"
+pidfile_remote_v6="/var/run/stun-gost-remote-v6.pid"
 pidfile_local="/var/run/stun-gost-local.pid"
 
 depend() {
@@ -551,7 +581,7 @@ EOF
     cat >${CLIENT_WORK_DIR}/start.sh <<EOF
 #!/bin/bash
 
-SOCKS5_PORT=${SOCKS5_PORT}
+PROXY_PORT=${PROXY_PORT}
 EOF
     [ -n "$STUN_DOMAIN_V4" ] && cat >>${CLIENT_WORK_DIR}/start.sh <<EOF
 REMOTE_PORT_V4=${REMOTE_PORT_V4}
@@ -575,20 +605,20 @@ EOF
     cat >>${CLIENT_WORK_DIR}/start.sh <<EOF
 
 start() {
-  echo "Starting local SOCKS5 proxy..."
-  \$GOST_PROG -D -L socks5://[::1]:\${SOCKS5_PORT} >/dev/null 2>&1 &
+  echo "Starting local proxy..."
+  \$GOST_PROG -D -L ${PROXY_CMD}@[::1]:\${PROXY_PORT} >/dev/null 2>&1 &
   echo \$! > \$GOST_LOCAL_PID
 
 EOF
     [ -n "$STUN_DOMAIN_V4" ] && cat >>${CLIENT_WORK_DIR}/start.sh <<EOF
   echo "Starting remote IPv4 RTCP proxy..."
-  \$GOST_PROG -D -L rtcp://:\${REMOTE_PORT_V4}/[::1]:\${SOCKS5_PORT} -F "relay+ws://\${STUN_DOMAIN_V4}:80?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V4}" >/dev/null 2>&1 &
+  \$GOST_PROG -D -L rtcp://:\${REMOTE_PORT_V4}/[::1]:\${PROXY_PORT} -F "relay+wss://\${STUN_DOMAIN_V4}:443?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V4}" >/dev/null 2>&1 &
   echo \$! > \$GOST_REMOTE_PID_V4
 
 EOF
     [ -n "$STUN_DOMAIN_V6" ] && cat >>${CLIENT_WORK_DIR}/start.sh <<EOF
   echo "Starting remote IPv6 RTCP proxy..."
-  \$GOST_PROG -D -L rtcp://:\${REMOTE_PORT_V6}/[::1]:\${SOCKS5_PORT} -F "relay+ws://\${STUN_DOMAIN_V6}:80?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V6}" >/dev/null 2>&1 &
+  \$GOST_PROG -D -L rtcp://:\${REMOTE_PORT_V6}/[::1]:\${PROXY_PORT} -F "relay+wss://\${STUN_DOMAIN_V6}:443?path=/\${WS_PATH}&host=\${STUN_DOMAIN_V6}" >/dev/null 2>&1 &
   echo \$! > \$GOST_REMOTE_PID_V6
 
 EOF
